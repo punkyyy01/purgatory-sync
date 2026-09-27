@@ -17,9 +17,19 @@ log = logging.getLogger("purgatory_sync")
 
 
 def build_intents() -> discord.Intents:
-    """El mínimo necesario — ver el análisis en el README antes de tocar esto."""
+    """El mínimo necesario — ver el análisis en el README antes de tocar esto.
+
+    GUILDS no gatea GUILD_MEMBER_*/GUILD_BAN_* en la doc de Discord — eso lo
+    gatean GUILD_MEMBERS y GUILD_MODERATION por su cuenta. Igual la dejamos
+    prendida por una razón de discord.py, no de la API de Discord: sus
+    parsers de member/ban event (state.py) hacen `guild = self._get_guild(id)`
+    y si es None, descartan el evento en silencio — no llega ni on_member_join,
+    ni update, ni ban. Y ese cache solo se llena vía GUILD_CREATE, que sí
+    depende de GUILDS. O sea: Discord mandaría el evento igual sin GUILDS,
+    pero discord.py lo tiraría antes de que nuestro handler lo vea.
+    """
     intents = discord.Intents.none()
-    intents.guilds = True   # base: sin esto no llega ni GUILD_CREATE
+    intents.guilds = True   # ver docstring — no es para member/ban, es para el cache interno de discord.py
     intents.members = True  # privilegiado — hay que activarlo en el Developer Portal
     intents.bans = True     # GUILD_MODERATION: ban add/remove
     return intents

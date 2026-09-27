@@ -26,11 +26,22 @@ Discord (rol, boost, ban, member) → este bot (Gateway) → Postgres → la web
 
 ## Intents, permisos y por qué (leer antes de tocar `build_intents()`)
 
-Pedimos exactamente lo que usamos, nada más — esto quedó definido así a propósito, no por default de una librería:
+Pedimos exactamente lo que usamos, nada más — esto quedó definido así a propósito, no por default de una librería. Los eventos que de verdad nos importan cuelgan de dos intents, no de tres:
 
-- **`GUILDS`** (no privilegiado) — obligatorio como base, sin esto no llega ni `GUILD_CREATE`.
-- **`GUILD_MEMBERS`** (**privilegiado** — hay que activar "Server Members Intent" a mano en el Developer Portal) — de acá salen join/leave/update, incluyendo `roles` y `premium_since`.
-- **`GUILD_MODERATION`** / bans (no privilegiado) — ban add/remove.
+```
+GUILD_MEMBERS
+ ├── GUILD_MEMBER_ADD
+ ├── GUILD_MEMBER_UPDATE
+ └── GUILD_MEMBER_REMOVE
+
+GUILD_MODERATION
+ ├── GUILD_BAN_ADD
+ └── GUILD_BAN_REMOVE
+```
+
+- **`GUILD_MEMBERS`** (**privilegiado** — hay que activar "Server Members Intent" a mano en el Developer Portal) — join/leave/update, incluyendo `roles` y `premium_since`.
+- **`GUILD_MODERATION`** (no privilegiado) — ban add/remove.
+- **`GUILDS`** (no privilegiado) — según la [doc de Discord](https://discord.com/developers/docs/events/gateway#gateway-intents), esto NO gatea los eventos de arriba — gatea `GUILD_CREATE`/`UPDATE`/`DELETE` y los de roles/canales. La prendemos igual, pero por una razón de `discord.py`, no de la API: sus parsers de member/ban (`state.py`) resuelven `guild = self._get_guild(id)` antes de dispatchear, y si ese guild no está en caché lo descartan en silencio — `on_member_join/update/remove/ban/unban` simplemente no se disparan. Ese caché solo se puebla vía `GUILD_CREATE`, que sí depende de `GUILDS`. Es decir: Discord mandaría el evento igual sin `GUILDS`, pero la librería lo tiraría antes de que nuestro handler lo vea. Confirmado leyendo el propio `state.py` de discord.py, no de memoria.
 - **NO** `GUILD_PRESENCES` — no nos importa si alguien está online/jugando algo, y es privilegiado: pedirlo sería exactamente el tipo de sobre-alcance que hay que evitar.
 - **NO** `MESSAGE_CONTENT` — el bot no lee mensajes, no tiene comandos.
 - **NO** voice/invites/webhooks/emojis/etc.
