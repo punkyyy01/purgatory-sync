@@ -1,0 +1,5 @@
+# Deliberadamente corto — cada dependencia de más es más RAM/CPU/cold-start
+# en un worker de Railway que tiene que vivir dentro de ~1 USD/mes.
+discord.py>=2.4,<3
+asyncpg>=0.29,<0.30
+python-dotenv>=1.0,<2
