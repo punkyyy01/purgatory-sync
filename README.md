@@ -71,6 +71,7 @@ Se puede reusar la Application que ya existe para el bot de eventos de la web, o
 
 1. Correr `sql/0001_init.sql` en el SQL Editor del proyecto (crea `discord_members` y `sync_meta`).
 2. Project Settings → Database → Connection string → **URI**, puerto **5432** (directo, no el pooler 6543) → `DATABASE_URL`.
+3. Correr `sql/0002_web_read_role.sql` (reemplazando la contraseña) — crea el rol de solo lectura que usa `pagina-web-purgatory` para consultar `discord_members` sin poder escribirlo nunca. Ese connection string es para el otro repo, no para este bot.
 
 ### 3. Local
 
