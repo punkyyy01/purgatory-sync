@@ -18,9 +18,10 @@ grant usage on schema public to web_app;
 grant select on discord_members to web_app;
 -- sync_meta es operativo del bot — la web no necesita leerlo.
 
--- Cuando exista la tabla de cards/almas (Fase 6 de la web), a este
--- mismo rol se le da select+insert+update+delete SOLO sobre esa tabla.
--- discord_members se queda de solo lectura para siempre desde este rol.
+-- La tabla `almas` (Fase 5 de la web) ya existe y le da a este mismo
+-- rol select+insert+update SOLO sobre esa tabla — ver
+-- pagina-web-purgatory/sql/0001_almas.sql. discord_members se queda
+-- de solo lectura para siempre desde este rol.
 
 -- Connection string resultante para DATABASE_URL de la web (puerto
 -- 6543, el pooler — la web corre en funciones serverless de Vercel,
