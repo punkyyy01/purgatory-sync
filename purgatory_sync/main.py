@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import sys
 
 import discord
 
@@ -12,7 +14,25 @@ from . import db, events
 from .config import load_config
 from .reconcile import build_reconcile_loop
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+class RailwayJsonFormatter(logging.Formatter):
+    """Emite un JSON por línea para que Railway respete el nivel real."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        level = "warn" if record.levelno == logging.WARNING else record.levelname.lower()
+        message = record.getMessage()
+        if record.exc_info:
+            message += "\n" + self.formatException(record.exc_info)
+        if record.stack_info:
+            message += "\n" + self.formatStack(record.stack_info)
+        return json.dumps(
+            {"level": level, "message": message, "logger": record.name},
+            ensure_ascii=False,
+        )
+
+
+_handler = logging.StreamHandler(sys.stdout)
+_handler.setFormatter(RailwayJsonFormatter())
+logging.basicConfig(level=logging.INFO, handlers=[_handler])
 log = logging.getLogger("purgatory_sync")
 
 
